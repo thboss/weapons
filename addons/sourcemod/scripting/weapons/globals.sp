@@ -122,3 +122,6 @@ StringMap g_smLanguageIndex;
 
 GlobalForward g_hOnKnifeSelect_Pre;
 GlobalForward g_hOnKnifeSelect_Post;
+
+ConVar g_Cvar_VIPGroups;
+char g_VIPGroups[256];

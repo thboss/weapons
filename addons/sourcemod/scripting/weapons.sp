@@ -21,6 +21,7 @@
 #include <cstrike>
 #include <PTaH>
 #include <weapons>
+#include <vip_core>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -77,7 +78,7 @@ public void OnPluginStart()
 	
 	g_Cvar_DBConnection 			= CreateConVar("sm_weapons_db_connection", 			"storage-local", 	"Database connection name in databases.cfg to use");
 	g_Cvar_TablePrefix 			= CreateConVar("sm_weapons_table_prefix", 			"", 				"Prefix for database table (example: 'xyz_')");
-	g_Cvar_ChatPrefix 			= CreateConVar("sm_weapons_chat_prefix", 			"[oyunhost.net]", 	"Prefix for chat messages");
+	g_Cvar_ChatPrefix 			= CreateConVar("sm_weapons_chat_prefix", 			"[WS]", 	"Prefix for chat messages");
 	g_Cvar_KnifeStatTrakMode 		= CreateConVar("sm_weapons_knife_stattrak_mode", 	"0", 				"0: All knives show the same StatTrak counter (total knife kills) 1: Each type of knife shows its own separate StatTrak counter");
 	g_Cvar_EnableFloat 			= CreateConVar("sm_weapons_enable_float", 			"1", 				"Enable/Disable weapon float options");
 	g_Cvar_EnableNameTag 			= CreateConVar("sm_weapons_enable_nametag", 		"1", 				"Enable/Disable name tag options");
@@ -87,6 +88,7 @@ public void OnPluginStart()
 	g_Cvar_EnableWeaponOverwrite 	= CreateConVar("sm_weapons_enable_overwrite", 		"1", 				"Enable/Disable players overwriting other players' weapons (picked up from the ground) by using !ws command");
 	g_Cvar_GracePeriod 			= CreateConVar("sm_weapons_grace_period", 			"0", 				"Grace period in terms of seconds counted after round start for allowing the use of !ws command. 0 means no restrictions");
 	g_Cvar_InactiveDays 			= CreateConVar("sm_weapons_inactive_days", 			"30", 				"Number of days before a player (SteamID) is marked as inactive and his data is deleted. (0 or any negative value to disable deleting)");
+	g_Cvar_VIPGroups 				= CreateConVar("sm_weapons_vip_groups", "", "VIP Groups that get skins for free");
 	
 	AutoExecConfig(true, "weapons");
 	
@@ -180,7 +182,19 @@ public Action CommandWeaponSkins(int client, int args)
 	if (IsValidClient(client))
 	{
 		int menuTime;
-		if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
+		char vipGroup[32];
+		bool isVIP = false;
+
+		if (VIP_GetClientVIPGroup(client, vipGroup, sizeof(vipGroup)))
+		{
+			isVIP = StrContains(g_VIPGroups, vipGroup) > -1;
+		}
+
+		if (!isVIP && strlen(g_VIPGroups) != 0)
+		{
+			PrintToChat(client, " %s \x02 Sorry! You must have VIP to access this command", g_ChatPrefix);
+		}
+		else if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
 		{
 			CreateMainMenu(client).Display(client, menuTime);
 		}
@@ -199,7 +213,22 @@ public Action CommandSeedMenu(int client, int args)
 		ReplyToCommand(client, " %s \x02%T", g_ChatPrefix, "SeedDisabled", client);
 		return Plugin_Handled;
 	}
-	ReplyToCommand(client, " %s \x04%T", g_ChatPrefix, "SeedExplanation", client);
+
+	char vipGroup[32];
+	bool isVIP = false;
+
+	if (VIP_GetClientVIPGroup(client, vipGroup, sizeof(vipGroup)))
+	{
+		isVIP = StrContains(g_VIPGroups, vipGroup) > -1;
+	}
+
+	if (!isVIP && strlen(g_VIPGroups) != 0)
+	{
+		PrintToChat(client, " %s \x02 Sorry! You must have VIP to access this command", g_ChatPrefix);
+	}
+	else {
+		ReplyToCommand(client, " %s \x04%T", g_ChatPrefix, "SeedExplanation", client);
+	}
 	return Plugin_Handled;
 }
 
@@ -208,7 +237,19 @@ public Action CommandKnife(int client, int args)
 	if (IsValidClient(client))
 	{
 		int menuTime;
-		if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
+		char vipGroup[32];
+		bool isVIP = false;
+
+		if (VIP_GetClientVIPGroup(client, vipGroup, sizeof(vipGroup)))
+		{
+			isVIP = StrContains(g_VIPGroups, vipGroup) > -1;
+		}
+
+		if (!isVIP && strlen(g_VIPGroups) != 0)
+		{
+			PrintToChat(client, " %s \x02 Sorry! You must have VIP to access this command", g_ChatPrefix);
+		}
+		else if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
 		{
 			CreateKnifeMenu(client).Display(client, menuTime);
 		}
@@ -225,7 +266,19 @@ public Action CommandWSLang(int client, int args)
 	if (IsValidClient(client))
 	{
 		int menuTime;
-		if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
+		char vipGroup[32];
+		bool isVIP = false;
+
+		if (VIP_GetClientVIPGroup(client, vipGroup, sizeof(vipGroup)))
+		{
+			isVIP = StrContains(g_VIPGroups, vipGroup) > -1;
+		}
+
+		if (!isVIP && strlen(g_VIPGroups) != 0)
+		{
+			PrintToChat(client, " %s \x02 Sorry! You must have VIP to access this command", g_ChatPrefix);
+		}
+		else if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
 		{
 			CreateLanguageMenu(client).Display(client, menuTime);
 		}
@@ -244,7 +297,23 @@ public Action CommandNameTag(int client, int args)
 		ReplyToCommand(client, " %s \x02%T", g_ChatPrefix, "NameTagDisabled", client);
 		return Plugin_Handled;
 	}
-	ReplyToCommand(client, " %s \x04%T", g_ChatPrefix, "NameTagNew", client);
+
+	char vipGroup[32];
+	bool isVIP = false;
+
+	if (VIP_GetClientVIPGroup(client, vipGroup, sizeof(vipGroup)))
+	{
+		isVIP = StrContains(g_VIPGroups, vipGroup) > -1;
+	}
+
+	if (!isVIP && strlen(g_VIPGroups) != 0)
+	{
+		PrintToChat(client, " %s \x02 Sorry! You must have VIP to access this command", g_ChatPrefix);
+	}
+	else
+	{
+		ReplyToCommand(client, " %s \x04%T", g_ChatPrefix, "NameTagNew", client);
+	}
 	return Plugin_Handled;
 }
 
