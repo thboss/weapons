@@ -48,7 +48,7 @@ public void OnConfigsExecuted()
 	g_iFloatIncrementPercentage = RoundFloat(g_fFloatIncrementSize * 100.0);
 	g_bOverwriteEnabled = g_Cvar_EnableWeaponOverwrite.BoolValue;
 	g_iGracePeriod = g_Cvar_GracePeriod.IntValue;
-	g_Cvar_VIPGroups.GetString(g_VIPGroups, sizeof(g_VIPGroups));
+
 	if(g_iGracePeriod > 0)
 	{
 		HookEvent("round_start", OnRoundStart, EventHookMode_PostNoCopy);
@@ -91,15 +91,6 @@ public void OnClientPostAdminCheck(int client)
 	if(g_iDatabaseState > 1 && IsValidClient(client))
 	{
 		GetPlayerData(client);
-		QueryClientConVar(client, "cl_language", ConVarCallBack);
-	}
-}
-
-public void ConVarCallBack(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)
-{
-	if(!g_smLanguageIndex.GetValue(cvarValue, g_iClientLanguage[client]))
-	{
-		g_iClientLanguage[client] = 0;
 	}
 }
 

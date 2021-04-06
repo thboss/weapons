@@ -35,8 +35,6 @@ int g_iWeaponDefIndex[] = {
 /*50*/ 518, /*51*/ 521, /*52*/ 525
 };
 
-const int MAX_LANG = 40;
-
 Database db = null;
 
 char configPath[PLATFORM_MAX_PATH];
@@ -112,16 +110,11 @@ char g_MigrationWeapons[][] = {
 	"knife_skeleton"
 };
 
-char g_Language[MAX_LANG][32];
-int g_iClientLanguage[MAXPLAYERS+1];
-Menu menuWeapons[MAX_LANG][sizeof(g_WeaponClasses)];
+Menu menuWeapons[sizeof(g_WeaponClasses)];
 
 StringMap g_smWeaponIndex;
 StringMap g_smWeaponDefIndex;
-StringMap g_smLanguageIndex;
+StringMap g_smVipSkins;
 
 GlobalForward g_hOnKnifeSelect_Pre;
 GlobalForward g_hOnKnifeSelect_Post;
-
-ConVar g_Cvar_VIPGroups;
-char g_VIPGroups[256];

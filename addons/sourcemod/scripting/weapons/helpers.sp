@@ -39,12 +39,12 @@ void CleanNameTag(char[] nameTag, int size)
 	StripQuotes(nameTag);
 }
 
-int GetRandomSkin(int client, int index)
+int GetRandomSkin(int index)
 {
-	int max = menuWeapons[g_iClientLanguage[client]][index].ItemCount;
+	int max = menuWeapons[index].ItemCount;
 	int random = GetRandomInt(2, max);
 	char idStr[4];
-	menuWeapons[g_iClientLanguage[client]][index].GetItem(random, idStr, sizeof(idStr));
+	menuWeapons[index].GetItem(random, idStr, sizeof(idStr));
 	return StringToInt(idStr);
 }
 
@@ -90,23 +90,6 @@ bool IsKnife(int entity)
 	if(GetWeaponClass(entity, classname, sizeof(classname)))
 		return IsKnifeClass(classname);
 	return false;
-}
-
-int DefIndexByClass(char[] class)
-{
-	if (StrEqual(class, "weapon_knife"))
-	{
-		return 42;
-	}
-	if (StrEqual(class, "weapon_knife_t"))
-	{
-		return 59;
-	}
-	int index;
-	g_smWeaponDefIndex.GetValue(class, index);
-	if(index > -1)
-		return index;
-	return 0;
 }
 
 void RemoveWeaponPrefix(const char[] source, char[] output, int size)
@@ -157,14 +140,6 @@ bool IsValidWeapon(int weaponEntity)
 	GetEdictClassname(weaponEntity, weaponClass, sizeof(weaponClass));
 	
 	return StrContains(weaponClass, "weapon_") == 0;
-}
-
-void FirstCharUpper(char[] string)
-{
-	if (strlen(string) > 0)
-	{
-		string[0] = CharToUpper(string[0]);
-	}
 }
 
 int GetTotalKnifeStatTrakCount(int client)

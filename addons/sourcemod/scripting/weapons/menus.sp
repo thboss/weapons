@@ -23,11 +23,11 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 		{
 			if(IsClientInGame(client))
 			{
+				char info[4];
+				menu.GetItem(selection, info, sizeof(info));
+
 				int index = g_iIndex[client];
-				
-				char skinIdStr[32];
-				menu.GetItem(selection, skinIdStr, sizeof(skinIdStr));
-				int skinId = StringToInt(skinIdStr);
+				int skinId = StringToInt(info);
 				
 				g_iSkins[client][index] = skinId;
 				char updateFields[256];
@@ -43,6 +43,41 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 				pack.WriteCell(menu);
 				pack.WriteCell(GetClientUserId(client));
 				pack.WriteCell(GetMenuSelectionPosition());
+			}
+		}
+		case MenuAction_DrawItem:
+		{
+			if(IsClientInGame(client))
+			{
+				int style;
+				char buffer[8];
+				char info[4];
+				
+				menu.GetItem(selection, info, sizeof(info), style);
+
+				int index = g_iIndex[client];
+
+				char clientVipGroup[32];
+				char skinVipGroups[64];
+				bool isVIP = false;
+
+				Format(buffer, sizeof(buffer), "%i_%s", g_iWeaponDefIndex[index], info);
+				g_smVipSkins.GetString(buffer, skinVipGroups, sizeof(skinVipGroups));
+
+				if (strlen(skinVipGroups) > 0)
+				{
+					if (VIP_GetClientVIPGroup(client, clientVipGroup, sizeof(clientVipGroup)))
+					{
+						isVIP = StrContains(skinVipGroups, clientVipGroup) > -1;
+					}
+
+					if (!isVIP)
+					{
+						return ITEMDRAW_DISABLED;
+					}
+				}
+
+				return style;
 			}
 		}
 		case MenuAction_DisplayItem:
@@ -112,7 +147,7 @@ public int WeaponMenuHandler(Menu menu, MenuAction action, int client, int selec
 					int menuTime;
 					if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
 					{
-						menuWeapons[g_iClientLanguage[client]][g_iIndex[client]].Display(client, menuTime);
+						menuWeapons[g_iIndex[client]].Display(client, menuTime);
 					}
 				}
 				else if(StrEqual(buffer, "float"))
@@ -741,13 +776,6 @@ public int MainMenuHandler(Menu menu, MenuAction action, int client, int selecti
 						CreateAllWeaponsMenu(client).Display(client, menuTime);
 					}
 				}
-				else if(StrEqual(info, "lang"))
-				{
-					if((menuTime = GetRemainingGracePeriodSeconds(client)) >= 0)
-					{
-						CreateLanguageMenu(client).Display(client, menuTime);
-					}
-				}
 				else
 				{
 					g_smWeaponIndex.GetValue(info, g_iIndex[client]);
@@ -800,9 +828,6 @@ Menu CreateMainMenu(int client)
 	{
 		menu.AddItem("", "", ITEMDRAW_SPACER);
 	}
-	
-	Format(buffer, sizeof(buffer), "%T", "ChangeLang", client);
-	menu.AddItem("lang", buffer);
 	
 	return menu;
 }
@@ -912,46 +937,6 @@ public int KnifeMenuHandler(Menu menu, MenuAction menuaction, int client, int se
 				{
 					CreateKnifeMenu(client).DisplayAt(client, GetMenuSelectionPosition(), menuTime);
 				}
-			}
-		}
-		case MenuAction_End:
-		{
-			delete menu;
-		}
-	}
-}
-
-Menu CreateLanguageMenu(int client)
-{
-	Menu menu = new Menu(LanguageMenuHandler);
-	menu.SetTitle("%T", "ChooseLanguage", client);
-	
-	char buffer[4];
-	
-	for (int i = 0; i < sizeof(g_Language); i++)
-	{
-		if(strlen(g_Language[i]) == 0)
-			break;
-		IntToString(i, buffer, sizeof(buffer));
-		menu.AddItem(buffer, g_Language[i]);
-	}
-	
-	return menu;
-}
-
-public int LanguageMenuHandler(Menu menu, MenuAction action, int client, int selection)
-{
-	switch(action)
-	{
-		case MenuAction_Select:
-		{
-			if(IsClientInGame(client))
-			{
-				char langIndexStr[4];
-				menu.GetItem(selection, langIndexStr, sizeof(langIndexStr));
-				int langIndex = StringToInt(langIndexStr);
-				
-				g_iClientLanguage[client] = langIndex;
 			}
 		}
 		case MenuAction_End:
